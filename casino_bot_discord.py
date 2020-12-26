@@ -1,19 +1,13 @@
-from discord.ext.commands import Bot
 from discord.ext import commands
 from random import randrange
 import nest_asyncio
 import discord
 import gspread 
 from oauth2client.service_account import ServiceAccountCredentials 
-import time
-from threading import Timer
-import sched, time
 import asyncio
 import pandas as pd
-from gspread_dataframe import get_as_dataframe, set_with_dataframe
+from gspread_dataframe import set_with_dataframe
 from tabulate import tabulate
-import datetime as dt
-import threading
 
 credentials = {
   "type": "service_account",
