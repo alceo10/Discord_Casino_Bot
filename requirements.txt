@@ -1,1 +1,2 @@
 discord
+nest_asyncio==1.4.2
