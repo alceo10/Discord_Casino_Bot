@@ -39,6 +39,22 @@ data_pd["Discord ID"] = data_pd["Discord ID"].str.replace('a', '')
 
 #Databases
 
+
+number = False
+index = None
+nome = None
+list_players = data_pd['Discord ID'].tolist()
+roulette_spin = 0
+routette_bets_allow = 0
+roulette_in_calc = 0
+
+
+win_result_round = []
+lose_result_round = []
+historic = []
+data_rank = []
+
+
 def chip_count(user_id):
     return data_pd.loc[data_pd['Discord ID'] == str(user_id), "Chips"].iloc[0]
 
@@ -58,18 +74,14 @@ def false_allow_bets():
     global routette_bets_allow
     routette_bets_allow = 0
 
+def true_calc():
+    global roulette_in_calc
+    roulette_in_calc = 1
 
-number = False
-index = None
-nome = None
-list_players = data_pd['Discord ID'].tolist()
-roulette_spin = 0
-routette_bets_allow = 0
-
-win_result_round = []
-lose_result_round = []
-historic = []
-data_rank = []
+def false_calc():
+    global roulette_in_calc
+    roulette_in_calc = 0
+    
 
 roulette_dict = {"0": ["https://i.imgur.com/6gNoj11.png", "Green", "Green", ":green_circle:"], "1": ["https://i.imgur.com/5t8O8sP.png", "Red", "Odd", ":red_circle:"],
                  "2": ["https://i.imgur.com/YemZ7DR.png","Black","Even", ":black_circle:"], "3": ["https://i.imgur.com/YSHB35I.png","Red","Odd", ":red_circle:"],
@@ -133,125 +145,132 @@ async def on_message(message):
     user_id = message.author.id
     
     if message.channel.name == "🎰lidl-casino" and str(user_id) in list_players:
-        
-        if user_id == 128967486434574336:
-            if message.content == "$quicksave":
-                data_pd["Discord ID"] = data_pd["Discord ID"] + "a"
-                set_with_dataframe(sheet, data_pd)  
-        
-        global nome
-        nome = data_pd.loc[data_pd['Discord ID'] == str(user_id), "Name"].iloc[0]
-        
-        if message.content in statements_dict:
-            await channel.send(statements_dict[message.content], delete_after = 60)
-        elif message.content == "$mychips":
-            await channel.send(nome + "'s current Chip Count is: " + str(chip_count(user_id)), delete_after = 15)
-        
-        elif message.content == "$rank":
+        print(roulette_in_calc)   
+        if roulette_in_calc == 1:
+            await channel.send("Please you need to bet farther apart from the other players, try again", delete_after = 10)            
             
-            x = 1
-            sorted_data = data_pd.sort_values(by=['Chips'], ascending = False)
+        else: 
+            if user_id == 128967486434574336:
+                if message.content == "$quicksave":
+                    data_pd["Discord ID"] = data_pd["Discord ID"] + "a"
+                    set_with_dataframe(sheet, data_pd)  
             
-            data_rank = []
+            global nome
+            nome = data_pd.loc[data_pd['Discord ID'] == str(user_id), "Name"].iloc[0]
             
-            for account in range(0, len(data_pd)):
-                data_rank.append([str(x), sorted_data.iloc[account, 1], \
-                     str(sorted_data.iloc[account, 2]), str(sorted_data.iloc[account, 3])])   
-                x += 1
-
-            await channel.send("```fix\n Leaderboard\n" + tabulate(data_rank, headers=['Place', 'Name', 'Chips','# Bets'],
-                                        tablefmt="fancy_grid") +"```" , delete_after = 60)
+            if message.content in statements_dict:
+                await channel.send(statements_dict[message.content], delete_after = 60)
+            elif message.content == "$mychips":
+                await channel.send(nome + "'s current Chip Count is: " + str(chip_count(user_id)), delete_after = 15)
             
-            
-        elif message.content == "$rspin":
-            if roulette_spin == 1:
-                await channel.send("The Roulette is already spinniiiiiing Babyy!!", delete_after = 5)
+            elif message.content == "$rank":
                 
-            else:  
-                true_spin()
-                true_allow_bets()
+                x = 1
+                sorted_data = data_pd.sort_values(by=['Chips'], ascending = False)
                 
-                await channel.send("```fix\nSpin. The. Rouletteeeee!!!\n\nPlease place your bets!```", delete_after = 30)
+                data_rank = []
                 
-                number = randrange(37)
-                global outcome
-                outcome = [str(number), roulette_dict[str(number)][1].lower(), roulette_dict[str(number)][2].lower()]
-                
-                y = 1                
-                
-                if len(historic[-10:]) > 0:
-                    
-                    text = ""
-                    total_text = ""                    
+                for account in range(0, len(data_pd)):
+                    data_rank.append([str(x), sorted_data.iloc[account, 1], \
+                         str(sorted_data.iloc[account, 2]), str(sorted_data.iloc[account, 3])])   
+                    x += 1
     
-                    for histo in historic[-10:]:
-                        text = str(y) + "# " + roulette_dict[str(histo)][3] + " "  + str(histo) + " " + roulette_dict[str(histo)][2] + "\n"
-                        total_text = total_text + text                
-                        y += 1                              
+                await channel.send("```fix\n Leaderboard\n" + tabulate(data_rank, headers=['Place', 'Name', 'Chips','# Bets'],
+                                            tablefmt="fancy_grid") +"```" , delete_after = 60)
+                
+                
+            elif message.content == "$rspin":
+                if roulette_spin == 1:
+                    await channel.send("The Roulette is already spinniiiiiing Babyy!!", delete_after = 5)
                     
-                    await channel.send("```fix\nLast 10 Numbers:```", delete_after = 30)
-                    await channel.send(total_text, delete_after = 30)
-                
-                await asyncio.sleep(30)
-                false_allow_bets()
-                await channel.send("```fix\nNo more bets```", delete_after = 10)
-                await asyncio.sleep(10)
-                false_spin()
-                
-                await channel.send(roulette_dict[str(number)][0] + "\n" + roulette_dict[str(number)][3] + " " + list(roulette_dict.keys())[number] + ", " + roulette_dict[str(number)][2] + "\n", delete_after = 30)       
-                
-                global win_result_round
-                global lose_result_round
-                
-                for plays in win_result_round:
-                    data_pd.iloc[plays[0], 2] = data_pd.iloc[plays[0], 2] + plays[2]
-                    await channel.send("Congrats " + plays[1] + " you won: " + str(plays[2]) + " Chips!", delete_after = 20)     
-                   
-                for plays1 in lose_result_round:
-                    await channel.send("Damn " + plays1[1] + " you lost: " + str(plays1[2]) + " Chips :(", delete_after = 20)     
-                
-                historic.append(str(number))
-                win_result_round = []
-                lose_result_round = []                
-                outcome = []
-                number = None
+                else:  
+                    true_spin()
+                    true_allow_bets()
+                    
+                    await channel.send("```fix\nSpin. The. Rouletteeeee!!!\n\nPlease place your bets!```", delete_after = 30)
+                    
+                    number = randrange(37)
+                    global outcome
+                    outcome = [str(number), roulette_dict[str(number)][1].lower(), roulette_dict[str(number)][2].lower()]
+                    
+                    y = 1                
+                    
+                    if len(historic[-10:]) > 0:
+                        
+                        text = ""
+                        total_text = ""                    
         
-                
-        elif message.content.startswith("$rbet"):
-            if roulette_spin == 0:
-                await channel.send("You gotta spin the roulette first!\n\n Use the command: $rspin", delete_after = 10)     
-            elif routette_bets_allow == 0:
-                await channel.send("No more Bets allowed!", delete_after = 15)                     
-            elif len(message.content.split()) != 3:
-                await channel.send("Misscliked?\nExample format: $rbet black 10 [command, type, bet amount]", delete_after = 10)
-            elif (message.content.split()[1]).lower() not in possible:
-                await channel.send("Wrong Bet type!\n\nAvailable Bets: (Red, Black), (Odd, Even), Numbers (0 - 36)", delete_after = 10)
-            elif message.content.split()[2].isdigit() == False:
-                await channel.send("\nWe only take FULL chips!", delete_after = 10)
-            elif int(message.content.split()[2]) > chip_count(user_id):
-                await channel.send("Hey you don't have that amount of chips!\nYou currently only have: " + str(chip_count(user_id)) + " chips", delete_after = 10)            
-            
-            else:
-                global index
-                index = data_pd.loc[data_pd['Discord ID'] == str(message.author.id)].index[0]
-                nome = data_pd.loc[data_pd['Discord ID'] == str(message.author.id), "Name"].iloc[0]
-              
-                data_pd.iloc[index, 2] = data_pd.iloc[index, 2] - int(message.content.split()[2])
-                data_pd.iloc[index, 3] = data_pd.iloc[index, 3] + 1
-                await channel.send("Aposta Válida", delete_after = 2)            
-                
-                if message.content.split()[1].isdigit() == True and message.content.split()[1] in outcome:
-                    win_result_round.append([index, nome, int(message.content.split()[2]) * 36])
+                        for histo in historic[-10:]:
+                            text = str(y) + "# " + roulette_dict[str(histo)][3] + " "  + str(histo) + " " + roulette_dict[str(histo)][2] + "\n"
+                            total_text = total_text + text                
+                            y += 1                              
+                        
+                        await channel.send("```fix\nLast 10 Numbers:```", delete_after = 30)
+                        await channel.send(total_text, delete_after = 30)
                     
-                elif message.content.split()[1].lower() in outcome:
-                    win_result_round.append([index, nome, int(message.content.split()[2]) * 2])
-
+                    await asyncio.sleep(30)
+                    false_allow_bets()
+                    await channel.send("```fix\nNo more bets```", delete_after = 10)
+                    await asyncio.sleep(10)
+                    false_spin()
+                    
+                    await channel.send(roulette_dict[str(number)][0] + "\n" + roulette_dict[str(number)][3] + " " + list(roulette_dict.keys())[number] + ", " + roulette_dict[str(number)][2] + "\n", delete_after = 30)       
+                    
+                    global win_result_round
+                    global lose_result_round
+                    
+                    for plays in win_result_round:
+                        data_pd.iloc[plays[0], 2] = data_pd.iloc[plays[0], 2] + plays[2]
+                        await channel.send("Congrats " + plays[1] + " you won: " + str(plays[2]) + " Chips!", delete_after = 20)     
+                       
+                    for plays1 in lose_result_round:
+                        await channel.send("Damn " + plays1[1] + " you lost: " + str(plays1[2]) + " Chips :(", delete_after = 20)     
+                    
+                    historic.append(str(number))
+                    win_result_round = []
+                    lose_result_round = []                
+                    outcome = []
+                    number = None
+            
+                    
+            elif message.content.startswith("$rbet"):
+                if roulette_spin == 0:
+                    await channel.send("You gotta spin the roulette first!\n\n Use the command: $rspin", delete_after = 10)     
+                elif routette_bets_allow == 0:
+                    await channel.send("No more Bets allowed!", delete_after = 15)                     
+                elif len(message.content.split()) != 3:
+                    await channel.send("Misscliked?\nExample format: $rbet black 10 [command, type, bet amount]", delete_after = 10)
+                elif (message.content.split()[1]).lower() not in possible:
+                    await channel.send("Wrong Bet type!\n\nAvailable Bets: (Red, Black), (Odd, Even), Numbers (0 - 36)", delete_after = 10)
+                elif message.content.split()[2].isdigit() == False:
+                    await channel.send("\nWe only take FULL chips!", delete_after = 10)
+                elif int(message.content.split()[2]) > chip_count(user_id):
+                    await channel.send("Hey you don't have that amount of chips!\nYou currently only have: " + str(chip_count(user_id)) + " chips", delete_after = 10)            
+                    
                 else:
-                    lose_result_round.append([index, nome, int(message.content.split()[2])])
+                    true_calc()
+                    global index
+                    better = message.author.id
+                    index = data_pd.loc[data_pd['Discord ID'] == str(better)].index[0]
+                    nome = data_pd.loc[data_pd['Discord ID'] == str(better), "Name"].iloc[0]
+                  
+                    data_pd.iloc[index, 2] = data_pd.iloc[index, 2] - int(message.content.split()[2])
+                    data_pd.iloc[index, 3] = data_pd.iloc[index, 3] + 1
+                    await channel.send("Aposta Válida", delete_after = 2)            
+                    
+                    if message.content.split()[1].isdigit() == True and message.content.split()[1] in outcome:
+                        win_result_round.append([index, nome, int(message.content.split()[2]) * 36])
+                        
+                    elif message.content.split()[1].lower() in outcome:
+                        win_result_round.append([index, nome, int(message.content.split()[2]) * 2])
+    
+                    else:
+                        lose_result_round.append([index, nome, int(message.content.split()[2])])
+                    
+                    false_calc()
 
         await asyncio.sleep(5)
         await message.delete()
 
           
 client.run("NzkwMjU3NDE4NzI5OTQ3MTc3.X99-kg.i8Dx6YiXZhLvD0MChwNgHqZ4fdw")
-
