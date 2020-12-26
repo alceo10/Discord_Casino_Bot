@@ -96,7 +96,7 @@ statements_dict = {"$help": "```fix\n$games - See all the available Games\n$mych
                     "$games": "```fix\nRoullete - $roulette```",
                     "$rules": "```fix\nEveryday you receive a free chip in your Account! When you have enough Chips you can redeem your Prize near One Lider Boi! Enjoy!\nSee prizes with $prizes```",
                     "$prizes": "```fix\n 50Chips: Escolhe o que Alceo BANE e PICKA num jogo de LoL\n 100 Chips: Joker para o Gameshow da PDA\n 2.000 Chips: Torna-te Mod do Server!  \n 10.000 Chips: 100 Euros (cash) ```",
-                    "$roulette": "```fix\nWelcome to the LIDL Roulette!\n\First please the roulette with $rspin! When the Roulette is spinning place as many bets as you please, using: $rbet [type of bet] [amount of chips]\n\nTypes of Bets: Number (Pays 1-36), Red/Black (Pays 1-2), Even/Odd (Pays 1-2)\n\nExamples: $rbet Black 10 (Bets 10 Chips on Black);\n$rbet 1 5 (Bets 5 Chips on number 5)```"}
+                    "$roulette": "```fix\nWelcome to the LIDL Roulette!\nFirst please Spin the roulette with $rspin! When the Roulette is spinning place as many bets as you please, using: $rbet [type of bet] [amount of chips]\n\nTypes of Bets: Number (Pays 1-36), Red/Black (Pays 1-2), Even/Odd (Pays 1-2)\n\nExamples: $rbet Black 10 (Bets 10 Chips on Black);\n$rbet 1 5 (Bets 5 Chips on number 5)```"}
 
 
 possible = ["black", "red", "even", "odd"]
