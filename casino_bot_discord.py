@@ -107,7 +107,7 @@ roulette_dict = {"0": ["https://i.imgur.com/6gNoj11.png", "Green", "Green", ":gr
 statements_dict = {"$help": "```fix\n$games - See all the available Games\n$mychips - Your Current Chip Count\n$prizes - See the prizes you can redeem with your chips!\n$rules - See further information about Chips and Games\n$rank - See how you fare against your opponents (Leaderboard)```",
                     "$games": "```fix\nRoullete - $roulette```",
                     "$rules": "```fix\nEveryday you receive a free chip in your Account! When you have enough Chips you can redeem your Prize near One Lider Boi! Enjoy!\nSee prizes with $prizes```",
-                    "$prizes": "```fix\n 500 Chips: Escolhe o que Alceo BANE e PICKA num jogo de LoL\n 1000 Chips: Joker para o Gameshow da PDA\n 20.000 Chips: Torna-te Mod do Server!  \n 200.000 Chips: 100 Euros (cash) ```",
+                    "$prizes": "```fix\n500 Chips: Escolhe o que Alceo BANE e PICKA num jogo de LoL\n1.000 Chips: Joker para o Gameshow da PDA\n20.000 Chips: Torna-te Mod do Server!\n50.000 Chips: Cria o teu Text Channel aqui no Discord\n500.000 Chips: 100 Euros (cash) ```",
                     "$roulette": "```fix\nWelcome to the LIDL Roulette!\nFirst please Spin the roulette with $rspin! When the Roulette is spinning place as many bets as you please, using: $rbet [type of bet] [amount of chips]\n\nTypes of Bets: Number (Pays 1-36), Red/Black (Pays 1-2), Even/Odd (Pays 1-2)\n\nExamples: $rbet Black 10 (Bets 10 Chips on Black);\n$rbet 1 5 (Bets 5 Chips on number 5)```"}
 
 
