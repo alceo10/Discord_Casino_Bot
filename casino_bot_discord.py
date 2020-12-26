@@ -139,11 +139,8 @@ async def on_message(message):
                 data_pd["Discord ID"] = data_pd["Discord ID"] + "a"
                 set_with_dataframe(sheet, data_pd)  
         
-        global nome, index
-        
+        global nome
         nome = data_pd.loc[data_pd['Discord ID'] == str(user_id), "Name"].iloc[0]
-        index = data_pd.loc[data_pd['Discord ID'] == str(user_id)].index[0]
-        
         
         if message.content in statements_dict:
             await channel.send(statements_dict[message.content], delete_after = 60)
@@ -235,6 +232,10 @@ async def on_message(message):
                 await channel.send("Hey you don't have that amount of chips!\nYou currently only have: " + str(chip_count(user_id)) + " chips", delete_after = 10)            
             
             else:
+                global index
+                index = data_pd.loc[data_pd['Discord ID'] == str(message.author.id)].index[0]
+                nome = data_pd.loc[data_pd['Discord ID'] == str(message.author.id), "Name"].iloc[0]
+              
                 data_pd.iloc[index, 2] = data_pd.iloc[index, 2] - int(message.content.split()[2])
                 data_pd.iloc[index, 3] = data_pd.iloc[index, 3] + 1
                 await channel.send("Aposta Válida", delete_after = 2)            
