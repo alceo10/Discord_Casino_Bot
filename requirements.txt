@@ -1,2 +1,7 @@
 discord
 nest_asyncio==1.4.2
+gspread==3.6.0
+oauth2client==4.1.3
+pandas==1.1.3
+gspread_dataframe==3.2.0
+tabulate==0.8.7
