@@ -145,7 +145,6 @@ async def on_message(message):
     user_id = message.author.id
     
     if message.channel.name == "🎰lidl-casino" and str(user_id) in list_players:
-        print(roulette_in_calc)   
         if roulette_in_calc == 1:
             await channel.send("Please you need to bet farther apart from the other players, try again", delete_after = 10)            
             
@@ -188,7 +187,7 @@ async def on_message(message):
                     true_allow_bets()
                     
                     await channel.send("```fix\nSpin. The. Rouletteeeee!!!\n\nPlease place your bets!```", delete_after = 30)
-                    await channel.send("https://i.imgur.com/jWwXPPT.gif", delete_after = 30)
+                    await channel.send("https://i.imgur.com/bX8ZlOy.gif", delete_after = 30)
                     number = randrange(37)
                     global outcome
                     outcome = [str(number), roulette_dict[str(number)][1].lower(), roulette_dict[str(number)][2].lower()]
