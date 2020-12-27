@@ -134,7 +134,7 @@ async def on_ready():
         data_pd["Discord ID"] = data_pd["Discord ID"] + "a"
         set_with_dataframe(sheet, data_pd)
         data_pd["Discord ID"] = data_pd["Discord ID"].str.replace('a', '')
-        await asyncio.sleep(360)
+        await asyncio.sleep(3600)
 
 # $Roulette
 @client.event
