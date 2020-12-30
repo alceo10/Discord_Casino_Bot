@@ -30,7 +30,6 @@ scope = ["https://spreadsheets.google.com/feeds", 'https://www.googleapis.com/au
 creds = ServiceAccountCredentials.from_json_keyfile_dict(credentials, scope) 
 client = gspread.authorize(creds) 
 sheet = client.open("Casino Bot DB").sheet1 
-  
 
 # Display data 
 data = sheet.get_all_records()
@@ -113,7 +112,7 @@ statements_dict = {"$help": "```fix\n$games - See all the available Games\n$mych
                     "$rules": "```fix\nEveryhour you receive 5 free chips in your Account! When you have enough Chips you can redeem your Prize near One Lider Boi! Enjoy!\nSee prizes with $prizes```",
                     "$prizes": "```fix\n5.000 Chips: Escolhe o que Alceo BANE e PICKA num jogo de LoL\n10.000 Chips: Joker para o Gameshow da PDA\n200.000 Chips: Torna-te Mod do Server!\n500.000 Chips: Cria o teu Text Channel aqui no Discord\n1.000.000 Chips: 10 Euros (cash) ```",
                     "$roulette": "```fix\nWelcome to the LIDL Roulette!\nFirst please Spin the roulette with $rspin! When the Roulette is spinning place as many bets as you please, using: $rbet [type of bet] [amount of chips]\n\nTypes of Bets: Number (Pays 1-36), Thirds [t1, t2, t3] (Pays 1-3), Red/Black (Pays 1-2), Even/Odd (Pays 1-2)\n\nExamples: $rbet Black 10 (Bets 10 Chips on Black);\n$rbet 1 5 (Bets 5 Chips on number 5)```",
-                    "$slot": "```To use the slot, type the command: $sbet [number of lines] [amount of chips]. Number of lines can only be 1, 3 or 5. [Winning combinations details tomorow]```"}
+                    "$slot": "```To use the slot, type the command: $sbet [number of lines] [amount of chips]. Number of lines can only be 1, 3 or 5, the more lines you choose the more opportunities you have to win!\nThe Total Amount Betted = Number of Lines x Amount Chips```\nWinning Combinations Must ALWAYS Start in the 1st column!\nhttps://i.imgur.com/DGATqNN.png"}
 
 possible = ["black", "red", "even", "odd", "t1", "t2", "t3"]
 
@@ -249,7 +248,7 @@ async def on_message(message):
                     
                     
             if message.content.startswith("$sbet"):
-                if message.content.split()[1].isdigit() == False or message.content.split()[2].isdigit() == False or len(message.content.split()) != 3 or message.content.split()[1] not in ["1", "3", "5"]:
+                if len(message.content.split()) != 3 or message.content.split()[1].isdigit() == False or message.content.split()[2].isdigit() == False or message.content.split()[1] not in ["1", "3", "5"]:
                     await channel.send("Wrong Format. Please use: $sbet [number of lines] [amount of chips]. Number of lines can only be 1, 3 or 5!", delete_after = 10)
                 
                 elif int(message.content.split()[2]) > chip_count(user_id):
@@ -262,7 +261,8 @@ async def on_message(message):
                     index = data_pd.loc[data_pd['Discord ID'] == str(better)].index[0]
                     nome = data_pd.loc[data_pd['Discord ID'] == str(better), "Name"].iloc[0]
                     
-                    data_pd.iloc[index, 2] = data_pd.iloc[index, 2] - (int(message.content.split()[2]) * int(message.content.split()[1]))
+                    total_betted = int(message.content.split()[2]) * int(message.content.split()[1])
+                    
                     data_pd.iloc[index, 4] = data_pd.iloc[index, 4] + 1
                     await channel.send("```Machine Spinning!!```", delete_after = 2)                       
                     
@@ -287,16 +287,16 @@ async def on_message(message):
                         
                         if len(set(line1)) == 1:
                             profit += slot_multi[str(line1[0])] * int(message.content.split()[2])
-                            wins.append(" 3x " + str(line1[0]) + " - "  + str(slot_multi[str(line1[0])] * int(message.content.split()[2])) + " Chips,")
+                            wins.append(" 3x " + str(line1[0]) + " - "  + str(slot_multi[str(line1[0])] * int(message.content.split()[2])) + " Chips |")
                             
                         elif len(set(sline1)) == 1:
                             profit += slot_multi2[str(line1[0])] * int(message.content.split()[2])
-                            wins.append(" 2x " + str(line1[0]) + " - "  + str(slot_multi2[str(line1[0])] * int(message.content.split()[2])) + " Chips,")
+                            wins.append(" 2x " + str(line1[0]) + " - "  + str(slot_multi2[str(line1[0])] * int(message.content.split()[2])) + " Chips |")
                         
                         elif p11 == "7" or p21 == "7" or p31 == "7":
                             profit += int(message.content.split()[2])
                             if int(message.content.split()[1]) == 1:  
-                                wins.append(" 1x 7 - " + str(int(message.content.split()[2])) + " Chips,")
+                                wins.append(" 1x 7 - " + str(int(message.content.split()[2])) + " Chips |")
                         
                         if int(message.content.split()[1]) > 1:
                             line2 = [p11, p12, p13]
@@ -306,24 +306,24 @@ async def on_message(message):
                             
                             if len(set(line2)) == 1:
                                 profit += slot_multi[str(line2[0])] * int(message.content.split()[2])
-                                wins.append(" 3x " + str(line2[0]) + " - "  + str(slot_multi[str(line2[0])] * int(message.content.split()[2])) + " Chips,")
+                                wins.append(" 3x " + str(line2[0]) + " - "  + str(slot_multi[str(line2[0])] * int(message.content.split()[2])) + " Chips |")
                                 
                             elif len(set(sline2)) == 1:
                                 profit += slot_multi2[str(line2[0])] * int(message.content.split()[2])
-                                wins.append(" 2x " + str(line2[0]) + " - "  + str(slot_multi2[str(line2[0])] * int(message.content.split()[2])) + " Chips,")
+                                wins.append(" 2x " + str(line2[0]) + " - "  + str(slot_multi2[str(line2[0])] * int(message.content.split()[2])) + " Chips |")
                                 
                             if len(set(line3)) == 1:
                                 profit += slot_multi[str(line3[0])] * int(message.content.split()[2])
-                                wins.append(" 3x " + str(line3[0]) + " - "  + str(slot_multi[str(line3[0])] * int(message.content.split()[2])) + " Chips,")
+                                wins.append(" 3x " + str(line3[0]) + " - "  + str(slot_multi[str(line3[0])] * int(message.content.split()[2])) + " Chips |")
                                 
                             elif len(set(sline3)) == 1:
                                 profit += slot_multi2[str(line3[0])] * int(message.content.split()[2])
-                                wins.append(" 2x " + str(line3[0]) + " - "  + str(slot_multi2[str(line3[0])] * int(message.content.split()[2])) + " Chips,")
+                                wins.append(" 2x " + str(line3[0]) + " - "  + str(slot_multi2[str(line3[0])] * int(message.content.split()[2])) + " Chips |")
                             
                             elif p11 == "7" or p21 == "7" or p31 == "7":
                                 profit += 3 * int(message.content.split()[2])
                                 if int(message.content.split()[1]) == 3:
-                                    wins.append(" 1x 7 - " + str(4 * int(message.content.split()[2])) + " Chips,")
+                                    wins.append(" 1x 7 - " + str(4 * int(message.content.split()[2])) + " Chips |")
                                     
                             if int(message.content.split()[1]) > 3:
                                 line4 = [p11, p22, p33]
@@ -333,26 +333,24 @@ async def on_message(message):
                                 
                                 if len(set(line4)) == 1:
                                     profit += slot_multi[str(line4[0])] * int(message.content.split()[2])
-                                    wins.append(" 3x " + str(line4[0]) + " - "  + str(slot_multi[str(line4[0])] * int(message.content.split()[2])) + " Chips,")
+                                    wins.append(" 3x " + str(line4[0]) + " - "  + str(slot_multi[str(line4[0])] * int(message.content.split()[2])) + " Chips |")
                     
                                 elif len(set(sline4)) == 1:
                                     profit += slot_multi2[str(line4[0])] * int(message.content.split()[2])
-                                    wins.append(" 2x " + str(line4[0]) + " - "  + str(slot_multi2[str(line4[0])] * int(message.content.split()[2])) + " Chips,")
+                                    wins.append(" 2x " + str(line4[0]) + " - "  + str(slot_multi2[str(line4[0])] * int(message.content.split()[2])) + " Chips |")
                                     
                                 if len(set(line5)) == 1:
                                     profit += slot_multi[str(line5[0])] * int(message.content.split()[2])
-                                    wins.append(" 3x " + str(line5[0]) + " - "  + str(slot_multi[str(line5[0])] * int(message.content.split()[2])) + " Chips,")
+                                    wins.append(" 3x " + str(line5[0]) + " - "  + str(slot_multi[str(line5[0])] * int(message.content.split()[2])) + " Chips |")
                                     
                                 elif len(set(sline5)) == 1:
                                     profit += slot_multi2[str(line5[0])] * int(message.content.split()[2])
-                                    wins.append(" 2x " + str(line5[0]) + " - "  + str(slot_multi2[str(line5[0])] * int(message.content.split()[2])) + " Chips,")
+                                    wins.append(" 2x " + str(line5[0]) + " - "  + str(slot_multi2[str(line5[0])] * int(message.content.split()[2])) + " Chips |")
                     
                                 elif p11 == "7" or p21 == "7" or p31 == "7":
                                     profit += 2 * int(message.content.split()[2])
                                     if int(message.content.split()[1]) == 5:
-                                        wins.append(" 1x 7 - " + str(6 * int(message.content.split()[2])) + " Chips,")
-                    
-                    data_pd.iloc[index, 2] = data_pd.iloc[index, 2] + profit
+                                        wins.append(" 1x 7 - " + str(6 * int(message.content.split()[2])) + " Chips |")
                     
                     slot_lay = [[p11, p12, p13], [p21, p22, p23], [p31, p32, p33]]
                     slot_lay = pd.DataFrame(slot_lay)
@@ -361,20 +359,29 @@ async def on_message(message):
                     if wins != []:
                         string = "Win combinations:"
                         for i in wins:
-                            string += i
+                                string += i
                         string = string[:-1]   
                     await asyncio.sleep(2)
-                    await channel.send("```fix\nPlayer: " + nome +"\n" + tabulate(slot_lay, headers=['1', '2', '3'],
-                            tablefmt="fancy_grid", numalign="center") + "\n" + "You won: " + str(profit) + " Chips in the slot!" + "\n" + string + "```" , delete_after = 30)
                     
+                    print(profit)
+                    print(total_betted)
+                    print(profit - total_betted)
+                    print("")
+                    print(data_pd.iloc[index, 2])
+                    
+                    data_pd.iloc[index, 2] = data_pd.iloc[index, 2] + profit - total_betted
+                    print("")
+                    print(data_pd.iloc[index, 2])
+                    
+                    await channel.send("```fix\nPlayer: " + nome +"\n" + tabulate(slot_lay, headers=['1', '2', '3'],
+                            tablefmt="fancy_grid") + "\n" + "You won: " + str(profit - total_betted) + " Chips in the slot!" + "\n" + string + "```" , delete_after = 30)
                     
                     false_calc()
                 
-            nome = data_pd.loc[data_pd['Discord ID'] == str(user_id), "Name"].iloc[0]
-            
             if message.content in statements_dict:
                 await channel.send(statements_dict[message.content], delete_after = 60)
             elif message.content == "$mychips":
+                nome = data_pd.loc[data_pd['Discord ID'] == str(user_id), "Name"].iloc[0]
                 await channel.send(nome + "'s current Chip Count is: " + str(chip_count(user_id)), delete_after = 15)
             
             elif message.content == "$rank":
@@ -389,7 +396,7 @@ async def on_message(message):
                          str(sorted_data.iloc[account, 2]), str(sorted_data.iloc[account, 3])])   
                     x += 1
     
-                await channel.send("```fix\n Leaderboard\n" + tabulate(data_rank, headers=['Place', 'Name', 'Chips','# Bets'],
+                await channel.send("```fix\n Leaderboard\n" + tabulate(data_rank, headers=['Place', 'Name', 'Chips','#$rbet', '#$sbet'],
                                             tablefmt="fancy_grid") +"```" , delete_after = 60)
 
 
