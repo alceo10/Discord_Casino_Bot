@@ -1,5 +1,5 @@
 from discord.ext import commands
-from random import randrange
+from random import randrange, shuffle
 import nest_asyncio
 import discord
 import gspread 
@@ -39,7 +39,12 @@ data_pd["Discord ID"] = data_pd["Discord ID"].str.replace('a', '')
 
 #Databases
 
+# Slot Machine
+slot_possible = ["A", "A", "A", "K", "K", "K", "K", "Q", "Q", "Q", "Q", "Q", "Q", "Q", "J", "J", "J", "J", "J", "J", "J", "J", "J", "10", "10", "10", "10", "10", "10", "10", "7"]
+slot_multi = {"7": 100, "A": 25, "K": 15, "Q": 10, "J": 8, "10": 5}
+slot_multi2 = {"7": 30, "A": 10, "K": 5, "Q": 3, "J": 2, "10": 1}
 
+# Roulette Stuff
 number = False
 index = None
 nome = None
@@ -53,7 +58,6 @@ win_result_round = []
 lose_result_round = []
 historic = []
 data_rank = []
-
 
 def chip_count(user_id):
     return data_pd.loc[data_pd['Discord ID'] == str(user_id), "Chips"].iloc[0]
@@ -83,35 +87,35 @@ def false_calc():
     roulette_in_calc = 0
     
 
-roulette_dict = {"0": ["https://i.imgur.com/6gNoj11.png", "Green", "Green", ":green_circle:"], "1": ["https://i.imgur.com/5t8O8sP.png", "Red", "Odd", ":red_circle:"],
-                 "2": ["https://i.imgur.com/YemZ7DR.png","Black","Even", ":black_circle:"], "3": ["https://i.imgur.com/YSHB35I.png","Red","Odd", ":red_circle:"],
-                 "4": ["https://i.imgur.com/YcHi8Ty.png","Black","Even", ":black_circle:"], "5": ["https://i.imgur.com/P55otdV.png","Red","Odd", ":red_circle:"],
-                 "6": ["https://i.imgur.com/6V0ehHa.png","Black","Even", ":black_circle:"], "7": ["https://i.imgur.com/haLsfOu.png","Red","Odd", ":red_circle:"],
-                 "8": ["https://i.imgur.com/RlX6k8P.png","Black","Even", ":black_circle:"], "9": ["https://i.imgur.com/N3U19NM.png","Red","Odd", ":red_circle:"],
-                 "10": ["https://i.imgur.com/MESSNAr.png","Black","Even", ":black_circle:"], "11": ["https://i.imgur.com/qaglXAE.png","Black","Odd", ":black_circle:"],
-                 "12": ["https://i.imgur.com/uCk5qf3.png","Red","Even", ":red_circle:"], "13": ["https://i.imgur.com/SuKttnL.png","Black","Odd", ":black_circle:"],
-                 "14": ["https://i.imgur.com/3zqHa47.png","Red","Even", ":red_circle:"], "15": ["https://i.imgur.com/seBxCQj.png","Black","Odd", ":black_circle:"],
-                 "16": ["https://i.imgur.com/3RNcwT1.png","Red","Even", ":red_circle:"], "17": ["https://i.imgur.com/xQZGkyh.png","Black","Odd", ":black_circle:"],
-                 "18": ["https://i.imgur.com/CfG8UHP.png","Red","Even", ":red_circle:"], "19": ["https://i.imgur.com/rEyXlem.png","Red","Odd", ":red_circle:"],
-                 "20": ["https://i.imgur.com/AOeQclf.png","Black","Even", ":black_circle:"], "21": ["https://i.imgur.com/FLjqErT.png","Red","Odd", ":red_circle:"],
-                 "22": ["https://i.imgur.com/cnqxin9.png","Black","Even", ":black_circle:"], "23": ["https://i.imgur.com/6TdT0Vq.png","Red","Odd", ":red_circle:"],
-                 "24": ["https://i.imgur.com/O4uaIAW.png","Black","Even", ":black_circle:"], "25": ["https://i.imgur.com/bjNaHa7.png","Red","Odd", ":red_circle:"],
-                 "26": ["https://i.imgur.com/N7mlNbx.png","Black","Even", ":black_circle:"], "27": ["https://i.imgur.com/KxzBWB3.png","Red","Odd", ":red_circle:"],
-                 "28": ["https://i.imgur.com/BvMjyRD.png","Black","Even", ":black_circle:"], "29": ["https://i.imgur.com/FAQr09M.png","Black","Odd", ":black_circle:"],
-                 "30": ["https://i.imgur.com/X8OIwbV.png","Red","Even", ":red_circle:"], "31": ["https://i.imgur.com/RR9wbFm.png","Black","Odd", ":black_circle:"],
-                 "32": ["https://i.imgur.com/AR2bYKW.png","Red","Even", ":red_circle:"], "33": ["https://i.imgur.com/U8AuALD.png","Black","Odd", ":black_circle:"],
-                 "34": ["https://i.imgur.com/tfXbKeP.png","Red","Even", ":red_circle:"], "35": ["https://i.imgur.com/yhHMaUq.png","Black","Odd", ":black_circle:"],
-                 "36": ["https://i.imgur.com/W0fVMlj.png","Red", "Even", ":red_circle:"]}
+roulette_dict = {"0": ["https://i.imgur.com/6gNoj11.png", "Green", "Green", ":green_circle:", "Green"], "1": ["https://i.imgur.com/5t8O8sP.png", "Red", "Odd", ":red_circle:", "T1"],
+                 "2": ["https://i.imgur.com/YemZ7DR.png","Black","Even", ":black_circle:", "T1"], "3": ["https://i.imgur.com/YSHB35I.png","Red","Odd", ":red_circle:", "T1"],
+                 "4": ["https://i.imgur.com/YcHi8Ty.png","Black","Even", ":black_circle:", "T1"], "5": ["https://i.imgur.com/P55otdV.png","Red","Odd", ":red_circle:", "T1"],
+                 "6": ["https://i.imgur.com/6V0ehHa.png","Black","Even", ":black_circle:", "T1"], "7": ["https://i.imgur.com/haLsfOu.png","Red","Odd", ":red_circle:", "T1"],
+                 "8": ["https://i.imgur.com/RlX6k8P.png","Black","Even", ":black_circle:", "T1"], "9": ["https://i.imgur.com/N3U19NM.png","Red","Odd", ":red_circle:", "T1"],
+                 "10": ["https://i.imgur.com/MESSNAr.png","Black","Even", ":black_circle:", "T1"], "11": ["https://i.imgur.com/qaglXAE.png","Black","Odd", ":black_circle:", "T1"],
+                 "12": ["https://i.imgur.com/uCk5qf3.png","Red","Even", ":red_circle:", "T1"], "13": ["https://i.imgur.com/SuKttnL.png","Black","Odd", ":black_circle:", "T2"],
+                 "14": ["https://i.imgur.com/3zqHa47.png","Red","Even", ":red_circle:", "T2"], "15": ["https://i.imgur.com/seBxCQj.png","Black","Odd", ":black_circle:", "T2"],
+                 "16": ["https://i.imgur.com/3RNcwT1.png","Red","Even", ":red_circle:", "T2"], "17": ["https://i.imgur.com/xQZGkyh.png","Black","Odd", ":black_circle:", "T2"],
+                 "18": ["https://i.imgur.com/CfG8UHP.png","Red","Even", ":red_circle:", "T2"], "19": ["https://i.imgur.com/rEyXlem.png","Red","Odd", ":red_circle:", "T2"],
+                 "20": ["https://i.imgur.com/AOeQclf.png","Black","Even", ":black_circle:", "T2"], "21": ["https://i.imgur.com/FLjqErT.png","Red","Odd", ":red_circle:", "T2"],
+                 "22": ["https://i.imgur.com/cnqxin9.png","Black","Even", ":black_circle:", "T2"], "23": ["https://i.imgur.com/6TdT0Vq.png","Red","Odd", ":red_circle:", "T2"],
+                 "24": ["https://i.imgur.com/O4uaIAW.png","Black","Even", ":black_circle:", "T2"], "25": ["https://i.imgur.com/bjNaHa7.png","Red","Odd", ":red_circle:", "T3"],
+                 "26": ["https://i.imgur.com/N7mlNbx.png","Black","Even", ":black_circle:", "T3"], "27": ["https://i.imgur.com/KxzBWB3.png","Red","Odd", ":red_circle:", "T3"],
+                 "28": ["https://i.imgur.com/BvMjyRD.png","Black","Even", ":black_circle:", "T3"], "29": ["https://i.imgur.com/FAQr09M.png","Black","Odd", ":black_circle:", "T3"],
+                 "30": ["https://i.imgur.com/X8OIwbV.png","Red","Even", ":red_circle:", "T3"], "31": ["https://i.imgur.com/RR9wbFm.png","Black","Odd", ":black_circle:", "T3"],
+                 "32": ["https://i.imgur.com/AR2bYKW.png","Red","Even", ":red_circle:", "T3"], "33": ["https://i.imgur.com/U8AuALD.png","Black","Odd", ":black_circle:", "T3"],
+                 "34": ["https://i.imgur.com/tfXbKeP.png","Red","Even", ":red_circle:", "T3"], "35": ["https://i.imgur.com/yhHMaUq.png","Black","Odd", ":black_circle:", "T3"],
+                 "36": ["https://i.imgur.com/W0fVMlj.png","Red", "Even", ":red_circle:", "T3"]}
 
 
 statements_dict = {"$help": "```fix\n$games - See all the available Games\n$mychips - Your Current Chip Count\n$prizes - See the prizes you can redeem with your chips!\n$rules - See further information about Chips and Games\n$rank - See how you fare against your opponents (Leaderboard)```",
-                    "$games": "```fix\nRoullete - $roulette```",
-                    "$rules": "```fix\nEvery hour 5 free chips in your Account! When you have enough Chips you can redeem your Prize near One Lider Boi! Enjoy!\nSee prizes with $prizes```",
+                    "$games": "```fix\nRoullete - $roulette\nSlot Machine - $slot```",
+                    "$rules": "```fix\nEveryhour you receive 5 free chips in your Account! When you have enough Chips you can redeem your Prize near One Lider Boi! Enjoy!\nSee prizes with $prizes```",
                     "$prizes": "```fix\n5.000 Chips: Escolhe o que Alceo BANE e PICKA num jogo de LoL\n10.000 Chips: Joker para o Gameshow da PDA\n200.000 Chips: Torna-te Mod do Server!\n500.000 Chips: Cria o teu Text Channel aqui no Discord\n1.000.000 Chips: 10 Euros (cash) ```",
-                    "$roulette": "```fix\nWelcome to the LIDL Roulette!\nFirst please Spin the roulette with $rspin! When the Roulette is spinning place as many bets as you please, using: $rbet [type of bet] [amount of chips]\n\nTypes of Bets: Number (Pays 1-36), Red/Black (Pays 1-2), Even/Odd (Pays 1-2)\n\nExamples: $rbet Black 10 (Bets 10 Chips on Black);\n$rbet 1 5 (Bets 5 Chips on number 5)```"}
+                    "$roulette": "```fix\nWelcome to the LIDL Roulette!\nFirst please Spin the roulette with $rspin! When the Roulette is spinning place as many bets as you please, using: $rbet [type of bet] [amount of chips]\n\nTypes of Bets: Number (Pays 1-36), Thirds [t1, t2, t3] (Pays 1-3), Red/Black (Pays 1-2), Even/Odd (Pays 1-2)\n\nExamples: $rbet Black 10 (Bets 10 Chips on Black);\n$rbet 1 5 (Bets 5 Chips on number 5)```",
+                    "$slot": "```To use the slot, type the command: $sbet [number of lines] [amount of chips]. Number of lines can only be 1, 3 or 5. [Winning combinations details tomorow]```"}
 
-
-possible = ["black", "red", "even", "odd"]
+possible = ["black", "red", "even", "odd", "t1", "t2", "t3"]
 
 for values in range(0, 37):
     possible.append(str(values))
@@ -134,7 +138,7 @@ async def on_ready():
         data_pd["Discord ID"] = data_pd["Discord ID"] + "a"
         set_with_dataframe(sheet, data_pd)
         data_pd["Discord ID"] = data_pd["Discord ID"].str.replace('a', '')
-        await asyncio.sleep(3600)
+        await asyncio.sleep(360)
 
 # $Roulette
 @client.event
@@ -149,12 +153,223 @@ async def on_message(message):
             await channel.send("Please you need to bet farther apart from the other players, try again", delete_after = 10)            
             
         else: 
-            if user_id == 128967486434574336:
-                if message.content == "$quicksave":
-                    data_pd["Discord ID"] = data_pd["Discord ID"] + "a"
-                    set_with_dataframe(sheet, data_pd)  
             
-            global nome
+            if message.content == "$rspin":
+                if roulette_spin == 1:
+                    await channel.send("The Roulette is already spinniiiiiing Babyy!!", delete_after = 5)
+                    
+                else:  
+                    true_spin()
+                    true_allow_bets()
+                    
+                    await channel.send("```fix\nSpin. The. Rouletteeeee!!!\n\nPlease place your bets!```", delete_after = 30)
+                    await channel.send("https://i.imgur.com/bX8ZlOy.gif", delete_after = 30)
+                    number = randrange(37)
+                    global outcome
+                    outcome = [str(number), roulette_dict[str(number)][1].lower(), roulette_dict[str(number)][2].lower(), roulette_dict[str(number)][4].lower()]
+                    
+                    y = 1                
+                    
+                    if len(historic[-15:]) > 0:
+                        
+                        text = ""
+                        total_text = ""                    
+        
+                        for histo in historic[-15:]:
+                            text = str(y) + "# " + roulette_dict[str(histo)][3] + " "  + str(histo) + " " + roulette_dict[str(histo)][2] + "\n"
+                            total_text = total_text + text                
+                            y += 1                              
+                        
+                        await channel.send("```fix\nLast 10 Numbers:```", delete_after = 30)
+                        await channel.send(total_text, delete_after = 30)
+                    
+                    await asyncio.sleep(30)
+                    false_allow_bets()
+                    await channel.send("```fix\nNo more bets```", delete_after = 10)
+                    await asyncio.sleep(10)
+                    false_spin()
+                    
+                    await channel.send(roulette_dict[str(number)][0] + "\n" + roulette_dict[str(number)][3] + " " + list(roulette_dict.keys())[number] + ", " + roulette_dict[str(number)][2] + ", " + roulette_dict[str(number)][4] + "\n", delete_after = 30)       
+                    
+                    global win_result_round
+                    global lose_result_round
+                    
+                    for plays in win_result_round:
+                        data_pd.iloc[plays[0], 2] = data_pd.iloc[plays[0], 2] + plays[2]
+                        await channel.send("Congrats " + plays[1] + " you won: " + str(plays[2]) + " Chips!", delete_after = 20)     
+                       
+                    for plays1 in lose_result_round:
+                        await channel.send("Damn " + plays1[1] + " you lost: " + str(plays1[2]) + " Chips :(", delete_after = 20)     
+                    
+                    historic.append(str(number))
+                    win_result_round = []
+                    lose_result_round = []                
+                    outcome = []
+                    number = None
+            
+            elif message.content.startswith("$rbet"):
+                if roulette_spin == 0:
+                    await channel.send("You gotta spin the roulette first!\n\n Use the command: $rspin", delete_after = 10)     
+                elif routette_bets_allow == 0:
+                    await channel.send("No more Bets allowed!", delete_after = 15)                     
+                elif len(message.content.split()) != 3:
+                    await channel.send("Misscliked?\nExample format: $rbet black 10 [command, type, bet amount]", delete_after = 10)
+                elif (message.content.split()[1]).lower() not in possible:
+                    await channel.send("Wrong Bet type!\n\nAvailable Bets: (Red, Black), (Odd, Even), Thirds (t1, t2, t3), Numbers (0 - 36)", delete_after = 10)
+                elif message.content.split()[2].isdigit() == False:
+                    await channel.send("\nWe only take FULL chips!", delete_after = 10)
+                elif int(message.content.split()[2]) > chip_count(user_id):
+                    await channel.send("Hey you don't have that amount of chips!\nYou currently only have: " + str(chip_count(user_id)) + " chips", delete_after = 10)            
+                    
+                else:
+                    true_calc()
+                    global index
+                    global nome
+                    better = message.author.id
+                    index = data_pd.loc[data_pd['Discord ID'] == str(better)].index[0]
+                    nome = data_pd.loc[data_pd['Discord ID'] == str(better), "Name"].iloc[0]
+                  
+                    data_pd.iloc[index, 2] = data_pd.iloc[index, 2] - int(message.content.split()[2])
+                    data_pd.iloc[index, 3] = data_pd.iloc[index, 3] + 1
+                    await channel.send("Aposta Válida", delete_after = 2)            
+                    
+                    if message.content.split()[1].isdigit() == True and message.content.split()[1] in outcome:
+                        win_result_round.append([index, nome, int(message.content.split()[2]) * 36])
+                    
+                    elif message.content.split()[1].startswith("t") and message.content.split()[1].lower() in outcome:
+                        win_result_round.append([index, nome, int(message.content.split()[2]) * 3])                    
+                    
+                    elif message.content.split()[1].lower() in outcome:
+                        win_result_round.append([index, nome, int(message.content.split()[2]) * 2])
+    
+                    else:
+                        lose_result_round.append([index, nome, int(message.content.split()[2])])
+                    
+                    false_calc()
+                    
+                    
+            if message.content.startswith("$sbet"):
+                if message.content.split()[1].isdigit() == False or message.content.split()[2].isdigit() == False or len(message.content.split()) != 3 or message.content.split()[1] not in ["1", "3", "5"]:
+                    await channel.send("Wrong Format. Please use: $sbet [number of lines] [amount of chips]. Number of lines can only be 1, 3 or 5!", delete_after = 10)
+                
+                elif int(message.content.split()[2]) > chip_count(user_id):
+                    await channel.send("Hey you don't have that amount of chips!\nYou currently only have: " + str(chip_count(user_id)) + " chips", delete_after = 10)            
+
+                else:
+                    true_calc()
+                    
+                    better = message.author.id
+                    index = data_pd.loc[data_pd['Discord ID'] == str(better)].index[0]
+                    nome = data_pd.loc[data_pd['Discord ID'] == str(better), "Name"].iloc[0]
+                    
+                    data_pd.iloc[index, 2] = data_pd.iloc[index, 2] - (int(message.content.split()[2]) * int(message.content.split()[1]))
+                    data_pd.iloc[index, 4] = data_pd.iloc[index, 4] + 1
+                    await channel.send("```Machine Spinning!!```", delete_after = 2)                       
+                    
+                    shuffle(slot_possible)
+                    p11 = slot_possible[0]
+                    p21 = slot_possible[1]
+                    p31 = slot_possible[2]
+                    shuffle(slot_possible)
+                    p12 = slot_possible[0]
+                    p22 = slot_possible[1]
+                    p32 = slot_possible[2]
+                    shuffle(slot_possible)    
+                    p13 = slot_possible[0]
+                    p23 = slot_possible[1]
+                    p33 = slot_possible[2]
+                    wins = []
+                    profit = 0
+                        
+                    if int(message.content.split()[1]) > 0:
+                        line1 = [p21, p22, p23]
+                        sline1 = [p21, p22]
+                        
+                        if len(set(line1)) == 1:
+                            profit += slot_multi[str(line1[0])] * int(message.content.split()[2])
+                            wins.append(" 3x " + str(line1[0]) + " - "  + str(slot_multi[str(line1[0])] * int(message.content.split()[2])) + " Chips,")
+                            
+                        elif len(set(sline1)) == 1:
+                            profit += slot_multi2[str(line1[0])] * int(message.content.split()[2])
+                            wins.append(" 2x " + str(line1[0]) + " - "  + str(slot_multi2[str(line1[0])] * int(message.content.split()[2])) + " Chips,")
+                        
+                        elif p11 == "7" or p21 == "7" or p31 == "7":
+                            profit += int(message.content.split()[2])
+                            if int(message.content.split()[1]) == 1:  
+                                wins.append(" 1x 7 - " + str(int(message.content.split()[2])) + " Chips,")
+                        
+                        if int(message.content.split()[1]) > 1:
+                            line2 = [p11, p12, p13]
+                            line3 = [p31, p32, p33]
+                            sline2 = [p11, p12]
+                            sline3 = [p31, p32]   
+                            
+                            if len(set(line2)) == 1:
+                                profit += slot_multi[str(line2[0])] * int(message.content.split()[2])
+                                wins.append(" 3x " + str(line2[0]) + " - "  + str(slot_multi[str(line2[0])] * int(message.content.split()[2])) + " Chips,")
+                                
+                            elif len(set(sline2)) == 1:
+                                profit += slot_multi2[str(line2[0])] * int(message.content.split()[2])
+                                wins.append(" 2x " + str(line2[0]) + " - "  + str(slot_multi2[str(line2[0])] * int(message.content.split()[2])) + " Chips,")
+                                
+                            if len(set(line3)) == 1:
+                                profit += slot_multi[str(line3[0])] * int(message.content.split()[2])
+                                wins.append(" 3x " + str(line3[0]) + " - "  + str(slot_multi[str(line3[0])] * int(message.content.split()[2])) + " Chips,")
+                                
+                            elif len(set(sline3)) == 1:
+                                profit += slot_multi2[str(line3[0])] * int(message.content.split()[2])
+                                wins.append(" 2x " + str(line3[0]) + " - "  + str(slot_multi2[str(line3[0])] * int(message.content.split()[2])) + " Chips,")
+                            
+                            elif p11 == "7" or p21 == "7" or p31 == "7":
+                                profit += 3 * int(message.content.split()[2])
+                                if int(message.content.split()[1]) == 3:
+                                    wins.append(" 1x 7 - " + str(4 * int(message.content.split()[2])) + " Chips,")
+                                    
+                            if int(message.content.split()[1]) > 3:
+                                line4 = [p11, p22, p33]
+                                line5 = [p31, p22, p13]
+                                sline4 = [p11, p22]
+                                sline5 = [p31, p22]   
+                                
+                                if len(set(line4)) == 1:
+                                    profit += slot_multi[str(line4[0])] * int(message.content.split()[2])
+                                    wins.append(" 3x " + str(line4[0]) + " - "  + str(slot_multi[str(line4[0])] * int(message.content.split()[2])) + " Chips,")
+                    
+                                elif len(set(sline4)) == 1:
+                                    profit += slot_multi2[str(line4[0])] * int(message.content.split()[2])
+                                    wins.append(" 2x " + str(line4[0]) + " - "  + str(slot_multi2[str(line4[0])] * int(message.content.split()[2])) + " Chips,")
+                                    
+                                if len(set(line5)) == 1:
+                                    profit += slot_multi[str(line5[0])] * int(message.content.split()[2])
+                                    wins.append(" 3x " + str(line5[0]) + " - "  + str(slot_multi[str(line5[0])] * int(message.content.split()[2])) + " Chips,")
+                                    
+                                elif len(set(sline5)) == 1:
+                                    profit += slot_multi2[str(line5[0])] * int(message.content.split()[2])
+                                    wins.append(" 2x " + str(line5[0]) + " - "  + str(slot_multi2[str(line5[0])] * int(message.content.split()[2])) + " Chips,")
+                    
+                                elif p11 == "7" or p21 == "7" or p31 == "7":
+                                    profit += 2 * int(message.content.split()[2])
+                                    if int(message.content.split()[1]) == 5:
+                                        wins.append(" 1x 7 - " + str(6 * int(message.content.split()[2])) + " Chips,")
+                    
+                    data_pd.iloc[index, 2] = data_pd.iloc[index, 2] + profit
+                    
+                    slot_lay = [[p11, p12, p13], [p21, p22, p23], [p31, p32, p33]]
+                    slot_lay = pd.DataFrame(slot_lay)
+                    
+                    string = ""
+                    if wins != []:
+                        string = "Win combinations:"
+                        for i in wins:
+                            string += i
+                        string = string[:-1]   
+                    await asyncio.sleep(2)
+                    await channel.send("```fix\nPlayer: " + nome +"\n" + tabulate(slot_lay, headers=['1', '2', '3'],
+                            tablefmt="fancy_grid", numalign="center") + "\n" + "You won: " + str(profit) + " Chips in the slot!" + "\n" + string + "```" , delete_after = 30)
+                    
+                    
+                    false_calc()
+                
             nome = data_pd.loc[data_pd['Discord ID'] == str(user_id), "Name"].iloc[0]
             
             if message.content in statements_dict:
@@ -176,100 +391,14 @@ async def on_message(message):
     
                 await channel.send("```fix\n Leaderboard\n" + tabulate(data_rank, headers=['Place', 'Name', 'Chips','# Bets'],
                                             tablefmt="fancy_grid") +"```" , delete_after = 60)
-                
-                
-            elif message.content == "$rspin":
-                if roulette_spin == 1:
-                    await channel.send("The Roulette is already spinniiiiiing Babyy!!", delete_after = 5)
-                    
-                else:  
-                    true_spin()
-                    true_allow_bets()
-                    
-                    await channel.send("```fix\nSpin. The. Rouletteeeee!!!\n\nPlease place your bets!```", delete_after = 30)
-                    await channel.send("https://i.imgur.com/bX8ZlOy.gif", delete_after = 30)
-                    number = randrange(37)
-                    global outcome
-                    outcome = [str(number), roulette_dict[str(number)][1].lower(), roulette_dict[str(number)][2].lower()]
-                    
-                    y = 1                
-                    
-                    if len(historic[-10:]) > 0:
-                        
-                        text = ""
-                        total_text = ""                    
-        
-                        for histo in historic[-10:]:
-                            text = str(y) + "# " + roulette_dict[str(histo)][3] + " "  + str(histo) + " " + roulette_dict[str(histo)][2] + "\n"
-                            total_text = total_text + text                
-                            y += 1                              
-                        
-                        await channel.send("```fix\nLast 10 Numbers:```", delete_after = 30)
-                        await channel.send(total_text, delete_after = 30)
-                    
-                    await asyncio.sleep(30)
-                    false_allow_bets()
-                    await channel.send("```fix\nNo more bets```", delete_after = 10)
-                    await asyncio.sleep(10)
-                    false_spin()
-                    
-                    await channel.send(roulette_dict[str(number)][0] + "\n" + roulette_dict[str(number)][3] + " " + list(roulette_dict.keys())[number] + ", " + roulette_dict[str(number)][2] + "\n", delete_after = 30)       
-                    
-                    global win_result_round
-                    global lose_result_round
-                    
-                    for plays in win_result_round:
-                        data_pd.iloc[plays[0], 2] = data_pd.iloc[plays[0], 2] + plays[2]
-                        await channel.send("Congrats " + plays[1] + " you won: " + str(plays[2]) + " Chips!", delete_after = 20)     
-                       
-                    for plays1 in lose_result_round:
-                        await channel.send("Damn " + plays1[1] + " you lost: " + str(plays1[2]) + " Chips :(", delete_after = 20)     
-                    
-                    historic.append(str(number))
-                    win_result_round = []
-                    lose_result_round = []                
-                    outcome = []
-                    number = None
-            
-                    
-            elif message.content.startswith("$rbet"):
-                if roulette_spin == 0:
-                    await channel.send("You gotta spin the roulette first!\n\n Use the command: $rspin", delete_after = 10)     
-                elif routette_bets_allow == 0:
-                    await channel.send("No more Bets allowed!", delete_after = 15)                     
-                elif len(message.content.split()) != 3:
-                    await channel.send("Misscliked?\nExample format: $rbet black 10 [command, type, bet amount]", delete_after = 10)
-                elif (message.content.split()[1]).lower() not in possible:
-                    await channel.send("Wrong Bet type!\n\nAvailable Bets: (Red, Black), (Odd, Even), Numbers (0 - 36)", delete_after = 10)
-                elif message.content.split()[2].isdigit() == False:
-                    await channel.send("\nWe only take FULL chips!", delete_after = 10)
-                elif int(message.content.split()[2]) > chip_count(user_id):
-                    await channel.send("Hey you don't have that amount of chips!\nYou currently only have: " + str(chip_count(user_id)) + " chips", delete_after = 10)            
-                    
-                else:
-                    true_calc()
-                    global index
-                    better = message.author.id
-                    index = data_pd.loc[data_pd['Discord ID'] == str(better)].index[0]
-                    nome = data_pd.loc[data_pd['Discord ID'] == str(better), "Name"].iloc[0]
-                  
-                    data_pd.iloc[index, 2] = data_pd.iloc[index, 2] - int(message.content.split()[2])
-                    data_pd.iloc[index, 3] = data_pd.iloc[index, 3] + 1
-                    await channel.send("Aposta Válida", delete_after = 2)            
-                    
-                    if message.content.split()[1].isdigit() == True and message.content.split()[1] in outcome:
-                        win_result_round.append([index, nome, int(message.content.split()[2]) * 36])
-                        
-                    elif message.content.split()[1].lower() in outcome:
-                        win_result_round.append([index, nome, int(message.content.split()[2]) * 2])
-    
-                    else:
-                        lose_result_round.append([index, nome, int(message.content.split()[2])])
-                    
-                    false_calc()
+
+
+            elif message.content == "$quicksave":
+                if user_id == 128967486434574336:
+                    data_pd["Discord ID"] = data_pd["Discord ID"] + "a"
+                    set_with_dataframe(sheet, data_pd)  
 
         await asyncio.sleep(5)
         await message.delete()
-
           
 client.run("NzkwMjU3NDE4NzI5OTQ3MTc3.X99-kg.i8Dx6YiXZhLvD0MChwNgHqZ4fdw")
