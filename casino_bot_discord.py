@@ -363,15 +363,7 @@ async def on_message(message):
                         string = string[:-1]   
                     await asyncio.sleep(2)
                     
-                    print(profit)
-                    print(total_betted)
-                    print(profit - total_betted)
-                    print("")
-                    print(data_pd.iloc[index, 2])
-                    
                     data_pd.iloc[index, 2] = data_pd.iloc[index, 2] + profit - total_betted
-                    print("")
-                    print(data_pd.iloc[index, 2])
                     
                     await channel.send("```fix\nPlayer: " + nome +"\n" + tabulate(slot_lay, headers=['1', '2', '3'],
                             tablefmt="fancy_grid") + "\n" + "You won: " + str(profit - total_betted) + " Chips in the slot!" + "\n" + string + "```" , delete_after = 30)
