@@ -251,7 +251,7 @@ async def on_message(message):
                 if len(message.content.split()) != 3 or message.content.split()[1].isdigit() == False or message.content.split()[2].isdigit() == False or message.content.split()[1] not in ["1", "3", "5"]:
                     await channel.send("Wrong Format. Please use: $sbet [number of lines] [amount of chips]. Number of lines can only be 1, 3 or 5!", delete_after = 10)
                 
-                elif int(message.content.split()[2]) > chip_count(user_id):
+                elif int(message.content.split()[2]) * int(message.content.split()[1]) > chip_count(user_id):
                     await channel.send("Hey you don't have that amount of chips!\nYou currently only have: " + str(chip_count(user_id)) + " chips", delete_after = 10)            
 
                 else:
