@@ -408,4 +408,4 @@ async def on_message(message):
         await asyncio.sleep(5)
         await message.delete()
           
-client.run("NzkwMjU3NDE4NzI5OTQ3MTc3.X99-kg.i8Dx6YiXZhLvD0MChwNgHqZ4fdw")
+client.run("NzkwMjU3NDE4NzI5OTQ3MTc3.X99-kg.WqNCndYShSpDO5OviXdj-yd1rU0")
